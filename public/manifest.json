@@ -1,0 +1,17 @@
+{
+  "name": "Notify PWA",
+  "short_name": "Notify",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1f6feb",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%231f6feb'/%3E%3Ctext x='96' y='112' text-anchor='middle' font-size='96' fill='white' font-family='Arial'%3E%F0%9F%93%A3%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

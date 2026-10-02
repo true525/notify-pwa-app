@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1f6feb" />
+    <title>Notify PWA</title>
+    <link rel="manifest" href="/manifest.json" />
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --primary: #3b82f6;
+        --primary-2: #1d4ed8;
+        --line: rgba(148, 163, 184, 0.25);
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #0f172a, #111827);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 24px 16px 48px;
+      }
+      .app {
+        width: 100%;
+        max-width: 460px;
+      }
+      .card {
+        background: rgba(17,24,39,0.9);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 20px;
+      }
+      h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 5vw, 2.4rem); }
+      .subtitle {
+        margin: 0 0 20px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #dbeafe;
+        font-weight: 600;
+      }
+      input, textarea, select {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: rgba(15,23,42,0.9);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 16px;
+        font-size: 1rem;
+      }
+      textarea { min-height: 120px; resize: vertical; }
+      button {
+        width: 100%;
+        border: none;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: white;
+        font-weight: 700;
+        font-size: 1rem;
+        border-radius: 12px;
+        padding: 16px;
+        cursor: pointer;
+      }
+      .status-box {
+        margin-top: 18px;
+        border-radius: 12px;
+        padding: 14px 16px;
+        display: none;
+        border: 1px solid var(--line);
+        background: rgba(15,23,42,0.7);
+      }
+      .status-box.show { display: block; }
+      .muted {
+        color: var(--muted);
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+      .small-note {
+        margin-top: 18px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px dashed rgba(148,163,184,0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="card">
+        <h1>Notify PWA</h1>
+        <p class="subtitle">タイトルと本文を入力して通知を送信します。OneSignalと接続できるように設定しています。</p>
+
+        <form id="notifyForm">
+          <div>
+            <label for="title">タイトル</label>
+            <input id="title" name="title" type="text" value="お知らせ" maxlength="80" required />
+          </div>
+
+          <div>
+            <label for="message">本文</label>
+            <textarea id="message" name="message" required>これはテスト通知です。OneSignal連携のテストです。</textarea>
+          </div>
+
+          <div>
+            <label for="target">送信先</label>
+            <select id="target" name="target">
+              <option value="all">全員</option>
+              <option value="vip">重要ユーザー</option>
+              <option value="staff">スタッフ</option>
+            </select>
+          </div>
+
+          <button type="submit">通知を送信</button>
+        </form>
+
+        <div id="result" class="status-box"></div>
+
+        <div class="small-note muted">
+          使い方: Safariで開いたあと、共有ボタンから「ホーム画面に追加」を選ぶとPWAとして使えます。
+          その後、OneSignal の App ID と REST API Key を設定すると、本物の通知が送れます。
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById('notifyForm');
+      const result = document.getElementById('result');
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const title = document.getElementById('title').value.trim();
+        const message = document.getElementById('message').value.trim();
+        const target = document.getElementById('target').value;
+
+        result.classList.add('show');
+        result.textContent = '送信中...';
+
+        try {
+          const response = await fetch('/api/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, message, target }),
+          });
+
+          const json = await response.json();
+
+          if (!response.ok || !json.ok) {
+            throw new Error(json.error || '送信に失敗しました');
+          }
+
+          result.style.borderColor = 'rgba(34, 197, 94, 0.5)';
+          result.style.color = '#bbf7d0';
+          result.textContent = `送信成功: ${json.data.title}`;
+        } catch (error) {
+          result.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+          result.style.color = '#fecaca';
+          result.textContent = error.message || '送信エラー';
+        }
+      });
+    </script>
+  </body>
+</html>
